@@ -1,0 +1,11 @@
+D:\RiderProjects\SpamFilter\SpamFilter\bin\Debug\SpamFilter.exe.config
+D:\RiderProjects\SpamFilter\SpamFilter\bin\Debug\SpamFilter.xml
+D:\RiderProjects\SpamFilter\SpamFilter\bin\Debug\SpamFilter.exe
+D:\RiderProjects\SpamFilter\SpamFilter\bin\Debug\SpamFilter.pdb
+D:\RiderProjects\SpamFilter\SpamFilter\bin\Debug\FSharp.Core.dll
+D:\RiderProjects\SpamFilter\SpamFilter\bin\Debug\System.ValueTuple.dll
+D:\RiderProjects\SpamFilter\SpamFilter\bin\Debug\FSharp.Core.xml
+D:\RiderProjects\SpamFilter\SpamFilter\obj\Debug\SpamFilter.fsprojResolveAssemblyReference.cache
+D:\RiderProjects\SpamFilter\SpamFilter\obj\Debug\SpamFilter.fsproj.CoreCompileInputs.cache
+D:\RiderProjects\SpamFilter\SpamFilter\obj\Debug\SpamFilter.exe
+D:\RiderProjects\SpamFilter\SpamFilter\obj\Debug\SpamFilter.pdb
