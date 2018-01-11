@@ -1,18 +1,21 @@
-﻿
+﻿module Program
+
 open System
 open System.IO
 
 type Error = 
     |ArgumentNotValidPath
+    |ArgumentOutOfRangeException
+    |ArgumentNotValidInteger
     
-type Complete = 
-    |ExecutionStarted
-    |ExecutionFinished
+type Execution = 
+    |Started
+    |Finished
 
 type TMessage<'Success, 'Err> = 
     |Error of 'Err
     |Ok of 'Success
-    |Complete of 'Success
+    |Execution of 'Success
 
 let getPhraseFilePath = 
     let baseDirectory = __SOURCE_DIRECTORY__
@@ -20,7 +23,9 @@ let getPhraseFilePath =
     Path.Combine(baseDirectory'.FullName, "SpamFilter\phrases_test_case\phrases.txt")
 
 let wordSplit (text:string) = 
-  text.Split([|' ';'\n';'\r';'\t';'!';',';'.';'?';';';':'; '/';'\\';'-';'+'; '*'; '#';'(';')';'^';'"';'\'';'`'; '@';'~';'|'|], StringSplitOptions.RemoveEmptyEntries)
+  text.Split([|' ';'\n';'\r';'\t';'!';',';'.';'?';';';':'; '/'
+  ;'\\';'-';'+'; '*'; '#';'(';')';'^';'"';'\'';'`'; '@';'~';'|'|]
+  ,StringSplitOptions.RemoveEmptyEntries)
   |> Array.toList 
   
 let readPhrases (path: string)= 
@@ -42,14 +47,17 @@ let printOutput x (filterPlank:int) (test:int) =
         |_ -> 
             printfn "Test %d: Spam filration result %d. Message added to inbox" (test) (x) 
     |Error(ArgumentNotValidPath) ->
-        printfn "\nNot all arguments provided are valid paths.\n" 
-    |_ -> printfn "\nWrong type provided to the 'printOutput()' function\n"
+        printfn "\nERROR: Not all arguments provided are valid paths.\n" 
+    |Error(ArgumentNotValidInteger) -> 
+        printfn "\nERROR: The first arguement provided is not valid 32-bit integer\n"
+    |Error(ArgumentOutOfRangeException) -> 
+        printfn "\nERROR: Provided filtering criteria must be in range from 1 to 50\n"
         
 let executionMessages x = 
     match x with
-    |Complete(ExecutionStarted) ->
+    |Execution(Started) ->
         printfn "\n...Email Spam Filtration Program Invoked...\n"
-    |Complete(ExecutionFinished) ->
+    |Execution(Finished) ->
         printfn "\n...Finished All Filtration Processes...\n"
     |_ -> printfn "\nWrong type provided to the 'executionMessages()' function\n"
 
@@ -87,25 +95,30 @@ let rec wordChanger (phrases : string list list) (text:string list) (n:int)=
     | h :: t ->
         wordChanger phrases t (phraseProcessor (h) (t) (phrases) (n))
 
-let rec startFiltration (phrasePath: string list list) (textsPath: string list) (testCount: int)= 
+let rec startFiltration (filterCriteria:int) (phrasePath: string list list) (textsPath: string list) (testCount: int)= 
     match textsPath with 
-    | [] -> executionMessages (Complete(ExecutionFinished))
+    | [] -> executionMessages (Execution(Finished))
     | h :: t -> 
         let result = wordChanger (phrasePath) (textToList (h)) (0)
-        printOutput (Ok(result)) (8) (testCount) 
-        startFiltration (phrasePath) (t) (testCount+1)
+        printOutput (Ok(result)) (filterCriteria) (testCount) 
+        startFiltration (filterCriteria) (phrasePath) (t) (testCount+1)
 
 let checkAndStart (args: string list) = 
-    match (checkPathsValidity (args)) with 
-    |true -> 
-        executionMessages (Complete(ExecutionStarted))
-        startFiltration (getPhraseFilePath |> readPhrases) (args) (1)
-    |false -> 
-        printOutput(Error(ArgumentNotValidPath)) 0 0
-
+    match (Int32.TryParse(args.Head)) with
+    | (valid, n) when valid && (n >= 1) && (n <= 50) ->
+        match (checkPathsValidity (args.Tail)) with 
+        |true -> 
+            executionMessages (Execution(Started))
+            startFiltration (n) (getPhraseFilePath |> readPhrases) (args.Tail) (1)
+        |false -> 
+            printOutput(Error(ArgumentNotValidPath)) 0 0
+    | (valid, n) when valid && ((n<1) ||(n>50)) ->
+        printOutput(Error(ArgumentOutOfRangeException)) 0 0
+    | _ -> 
+        printOutput(Error(ArgumentNotValidInteger)) 0 0
+       
 
 [<EntryPoint>]
 let main argv = 
     argv |> Array.toList |> checkAndStart
-
     0
